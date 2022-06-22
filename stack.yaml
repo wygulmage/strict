@@ -1,3 +1,7 @@
 
 resolver: lts-19.12
 
+packages:
+- pair-class
+- pair-strict
+
