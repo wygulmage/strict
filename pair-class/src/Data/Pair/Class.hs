@@ -109,8 +109,7 @@ fmapPair f = uncurry' $ \ u x -> u `pair` f x
 biliftPair2 ::
     (IsPair p)=> (u -> v -> w) -> (a -> b -> c) -> p u a -> p v b -> p w c
 {-^ @biliftA2 (<>)@ is a suitable definition for @liftA2@. -}
-biliftPair2 f g ux vy =
-    uncurry' (\ u x -> uncurry' (\ v y -> f u v `pair` g x y) vy) ux
+biliftPair2 = bifoldPair2With pair
 {-# INLINE biliftPair2 #-}
 
 bindPairWith ::
@@ -124,7 +123,13 @@ bindPairWith f g =
 {-# INLINE bindPairWith #-}
 
 bifoldPair2With ::
-    (IsPair p)=> (r1 -> r2 -> r) -> (a -> b -> r1) -> (c -> d -> r2) -> p a c -> p b d -> r
+    (IsPair p)=>
+    (a' -> b' -> r) -> (a1 -> a2 -> a') -> (b1 -> b2 -> b') ->
+    p a1 b1 -> p a2 b2 -> r
+{-^ @bifoldPair2With pair (<>)@ is a suitable definition for 'liftA2'.
+@bifoldPair2With (<>)@ is a suitable definition for 'Data.Functor.Classes.liftCompare2'.
+@bifoldPair2With (&&)@ is a suitable definition for 'Data.Functor.Classes.liftEq2'.
+-}
 bifoldPair2With f = f `seq`
     \ g h wx yz -> uncurry' (\ w x -> uncurry' (\ y z -> g w y `f` h x z) yz) wx
 {-# INLINE bifoldPair2With #-}
