@@ -2,6 +2,10 @@
 resolver: lts-19.12
 
 packages:
+- either-class
+- either-strict
+- maybe-strict
 - pair-class
+- pair-pattern
 - pair-strict
 
