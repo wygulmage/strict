@@ -1,5 +1,7 @@
 
 dist-newstyle
+.stack-work
+stack.yaml.lock
 .ghc.environment.*
 *.swp
 
