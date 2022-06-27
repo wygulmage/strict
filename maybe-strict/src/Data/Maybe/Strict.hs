@@ -11,6 +11,7 @@ import Control.DeepSeq
 
 import Control.Applicative
 import Control.Monad
+import qualified Control.Monad.Fail as Fail
 import Data.Foldable
 import Data.Functor.Classes
 import Data.Semigroup
@@ -35,6 +36,16 @@ instance Foldable Maybe' where
 #endif
     foldl' = foldl
     foldr' = foldr
+
+instance Fail.MonadFail Maybe' where
+    fail _ = mzero
+    {-# INLINE fail #-}
+
+instance MonadPlus Maybe' where
+    mzero = empty
+    {-# INLINE mzero #-}
+    mplus = (<|>)
+    {-# INLINE mplus #-}
 
 instance Monad Maybe' where
     (>>=) = flip (maybe' empty)

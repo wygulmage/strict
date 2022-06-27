@@ -13,6 +13,7 @@ import Data.Either.Class
 import Prelude hiding (either)
 import Control.Applicative
 import Control.Monad
+import qualified Control.Monad.Fail as Fail
 #if MIN_VERSION_base(4,10,0)
 import Data.Bitraversable
 import Data.Bifoldable
@@ -58,6 +59,16 @@ instance Foldable (Either' c) where
     foldMap' = foldMap
     {-# INLINE foldMap' #-}
 #endif
+
+instance (Monoid c)=> Fail.MonadFail (Either' c) where
+    fail _ = mzero
+    {-# INLINE fail #-}
+
+instance (Monoid c)=> MonadPlus (Either' c) where
+    mzero = empty
+    {-# INLINE mzero #-}
+    mplus = (<|>)
+    {-# INLINE mplus #-}
 
 instance Monad (Either' c) where
     (>>=) = flip bindEither
