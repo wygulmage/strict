@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP
+  #-}
 
 
 module Data.Maybe.Strict (
@@ -27,8 +29,10 @@ instance Traversable Maybe' where
 instance Foldable Maybe' where
     foldMap = maybe' mempty
     {-# INLINABLE foldMap #-}
+#if MIN_VERSION_base(4,13,0)
     foldMap' = foldMap
     {-# INLINABLE foldMap' #-}
+#endif
     foldl' = foldl
     foldr' = foldr
 
@@ -47,7 +51,10 @@ instance Alternative Maybe' where
 
 instance Applicative Maybe' where
     pure = Just'
+#if MIN_VERSION_base(4,10,0)
     liftA2 = liftM2
+#endif
+    (<*>) = ap
     (*>) = (>>)
     mx <* my | null mx || null my = empty | otherwise = mx
 
@@ -101,8 +108,8 @@ instance (Semigroup a)=> Semigroup (Maybe' a) where
     stimes n = fmap (stimes n)
     {-# INLINABLE stimes #-}
 
-instance (Monoid a)=> Monoid (Maybe' a) where
-    mempty = pure mempty
+instance (Semigroup a)=> Monoid (Maybe' a) where
+    mempty = Nothing'
 
 
 instance NFData1 Maybe' where
