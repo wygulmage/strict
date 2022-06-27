@@ -11,7 +11,7 @@ import Data.Pair.Class
 
 import Control.DeepSeq
 
-import Prelude (Bounded, Read, Show, Eq(..), seq)
+import Prelude (Bounded, Read, Show (..), Eq(..), (+), seq, showParen, showString)
 import Control.Applicative
 import Control.Monad
 #if MIN_VERSION_base(4,10,0)
@@ -28,8 +28,9 @@ import Data.Monoid
 import Data.Semigroup
 
 
+infix 1 :!:
 data Pair' a b = (:!:) !a !b
-  deriving (Bounded, Read, Show)
+  deriving (Bounded, Read)
 
 
 instance IsPair Pair' where
@@ -146,6 +147,20 @@ instance (Eq a, Eq b)=> Eq (Pair' a b) where
     (==) = eq1
     {-# INLINABLE (==) #-}
 
+instance Show2 Pair' where
+    liftShowsPrec2 s1 _ s2 _ d (x :!: y) = s1 `seq` s2 `seq`
+        showParen (d > pairPrec) $
+            s1 (pairPrec + 1) x . showString " :!: " . s2 (pairPrec + 1) y
+      where
+        pairPrec = 1
+    {-# NOTINLINE liftShowsPrec2 #-}
+
+instance (Show c)=> Show1 (Pair' c) where
+    liftShowsPrec = liftShowsPrec2 showsPrec showList
+
+instance (Show a, Show b)=> Show (Pair' a b) where
+    showsPrec = showsPrec1
+
 
 instance NFData2 Pair' where
     liftRnf2 = bifoldMapPairWith seq
@@ -168,6 +183,9 @@ instance (NFData a, NFData b)=> NFData (Pair' a b) where
 infixr 0 $
 ($) :: a -> a
 ($) x = x
+
+(.) :: (b -> c) -> (a -> b) -> a -> c
+(.) f = f `seq` \ g x -> f (g x)
 
 flip :: (a -> b -> c) -> b -> a -> c
 flip f = f `seq` \ x y -> f y x

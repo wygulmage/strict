@@ -18,6 +18,7 @@ import Data.Semigroup
 
 
 data Maybe' a = Just' !a | Nothing'
+  deriving (Read)
 
 maybe' :: b -> (a -> b) -> Maybe' a -> b
 maybe' z f mx = case mx of{ Just' x -> f x ; Nothing' -> z }
@@ -123,6 +124,13 @@ instance (Semigroup a)=> Semigroup (Maybe' a) where
 instance (Semigroup a)=> Monoid (Maybe' a) where
     mempty = Nothing'
 
+instance Show1 Maybe' where
+    liftShowsPrec s _ d =
+        s `seq` maybe' (showString "Nothing'") (showsUnaryWith s "Just'" d)
+    {-# NOTINLINE liftShowsPrec #-}
+
+instance (Show a)=> Show (Maybe' a) where
+    showsPrec = showsPrec1
 
 instance NFData1 Maybe' where
     liftRnf = foldMap

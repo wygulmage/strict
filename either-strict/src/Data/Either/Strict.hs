@@ -24,6 +24,7 @@ import Data.Functor.Classes
 
 
 data Either' a b = Right' !b | Left' !a
+  deriving (Read)
 
 
 instance IsEither Either' where
@@ -132,6 +133,19 @@ instance (Eq c)=> Eq1 (Either' c) where
 instance (Eq a, Eq b)=> Eq (Either' a b) where
     (==) = eq1
     {-# INLINABLE (==) #-}
+
+instance Show2 Either' where
+    liftShowsPrec2 s1 _ s2 _ d = s1 `seq` s2 `seq` either
+        (showsUnaryWith s1 "Left'" d)
+        (showsUnaryWith s2 "Right'" d)
+    {-# NOTINLINE liftShowsPrec2 #-}
+
+instance (Show c)=> Show1 (Either' c) where
+    liftShowsPrec = liftShowsPrec2 showsPrec showList
+
+instance (Show a, Show b)=> Show (Either' a b) where
+    showsPrec = showsPrec1
+
 
 instance NFData2 Either' where
     liftRnf2 = either
