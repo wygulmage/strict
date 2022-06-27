@@ -134,13 +134,6 @@ instance (Ord a, Ord b)=> Ord (Pair' a b) where
     (<) = flip (>) -- default: compare vy ux == LT
     {-# INLINE (<) #-}
 
--- Derived:
--- instance (Bounded high, Bounded low)=> Bounded (Pair' high low) where
---     maxBound = maxBound :!: maxBound
---     {-# INLINABLE maxBound #-}
---     minBound = minBound :!: minBound
---     {-# INLINABLE minBound #-}
-
 instance Eq2 Pair' where
     liftEq2 c1 c2 = c1 `seq` c2 `seq` go
       where go (u :!: x) (v :!: y) = c1 u v && c2 x y
