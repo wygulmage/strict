@@ -5,7 +5,7 @@ cabal-version:       2.2
 
 name:                either-class
 version:             0.0.0.0
-synopsis:            a class for 2-sums 
+synopsis:            a class for 2-sums
 -- description:
 -- bug-reports:
 license:             BSD-3-Clause OR LicenseRef-PublicDomain
@@ -24,4 +24,4 @@ library
   build-depends:       base >=4.10 && <5
   hs-source-dirs:      src
   default-language:    Haskell98
-
+  extensions:          PostfixOperators
