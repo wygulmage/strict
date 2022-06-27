@@ -22,10 +22,13 @@ maybe' z f mx = case mx of{ Just' x -> f x ; Nothing' -> z }
 
 instance Traversable Maybe' where
     traverse f = maybe' (pure empty) (fmap pure . f)
+    {-# INLINABLE traverse #-}
 
 instance Foldable Maybe' where
     foldMap = maybe' mempty
+    {-# INLINABLE foldMap #-}
     foldMap' = foldMap
+    {-# INLINABLE foldMap' #-}
     foldl' = foldl
     foldr' = foldr
 
@@ -33,6 +36,10 @@ instance Monad Maybe' where
     (>>=) = flip (maybe' empty)
 
 instance Alternative Maybe' where
+{-^ @forall f. empty >>= f = empty@
+@forall x my. pure x <|> my = pure x@
+@forall mf mg mx. (mf <|> mg) <*> mx = (mf <*> mx) <|> (mg <*> mf)@
+-}
     empty = Nothing'
     mx <|> my | null mx = my | otherwise = mx
     many = maybe' (pure empty) (pure . repeat)
@@ -57,10 +64,23 @@ instance Ord1 Maybe' where
 
 instance (Ord a)=> Ord (Maybe' a) where
     compare = compare1
-
+    {-# INLINABLE compare #-}
     Just' x <= Just' y = x <= y
     Just'{} <= Nothing' = False
     _ <= _ = True
+    {-# INLINABLE (<=) #-}
+    (>=) = flip (<=)
+    {-# INLINE (>=) #-}
+    mx > my = not (mx <= my)
+    {-# INLINE (>) #-}
+    (<) = flip (>)
+    {-# INLINE (<) #-}
+
+instance (Bounded a)=> Bounded (Maybe' a) where
+    maxBound = Just' maxBound
+    {-# INLINABLE maxBound #-}
+    minBound = Nothing'
+    {-# INLINABLE minBound #-}
 
 instance Eq1 Maybe' where
     liftEq eq = eq `seq` go
@@ -71,11 +91,15 @@ instance Eq1 Maybe' where
 
 instance (Eq a)=> Eq (Maybe' a) where
     (==) = eq1
+    {-# INLINABLE (==) #-}
 
 instance (Semigroup a)=> Semigroup (Maybe' a) where
     Just' x <> Just' y = Just' (x <> y)
     mx@Just'{} <> Nothing' = mx
     Nothing'{} <> my = my
+    {-# INLINABLE (<>) #-}
+    stimes n = fmap (stimes n)
+    {-# INLINABLE stimes #-}
 
 instance (Monoid a)=> Monoid (Maybe' a) where
     mempty = pure mempty
@@ -86,3 +110,4 @@ instance NFData1 Maybe' where
 
 instance (NFData a)=> NFData (Maybe' a) where
     rnf = rnf1
+    {-# INLINEABLE rnf #-}

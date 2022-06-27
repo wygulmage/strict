@@ -9,7 +9,7 @@ import Data.Pair.Class
 
 import Control.DeepSeq
 
-import Prelude (Read, Show, Eq(..), seq)
+import Prelude (Bounded, Read, Show, Eq(..), seq)
 import Control.Applicative
 import Control.Monad
 import Data.Bitraversable
@@ -25,7 +25,7 @@ import Data.Semigroup
 
 
 data Pair' a b = (:!:) !a !b
-  deriving (Read, Show)
+  deriving (Bounded, Read, Show)
 
 
 instance IsPair Pair' where
@@ -35,15 +35,18 @@ instance IsPair Pair' where
 
 instance Bitraversable Pair' where
     bitraverse = bifoldMapPairWith $ liftA2 pair
+    {-# INLINABLE bitraverse #-}
 
 instance Traversable (Pair' c) where
-   traverse = bifoldMapPairWith fmap pair
+    traverse = bifoldMapPairWith fmap pair
+    {-# INLINABLE traverse #-}
 
 instance Bifoldable Pair' where
     bifoldMap = bifoldMapPairWith (<>)
 
 instance Foldable (Pair' c) where
     foldMap = foldMapPair
+    {-# INLINABLE foldMap #-}
     -- Definitions below are unnecessary but simplify things:
     foldMap' = foldMap
     {-# INLINE foldMap' #-}
@@ -73,17 +76,23 @@ instance Functor (Pair' c) where
 
 instance (Monoid c)=> Applicative (Pair' c) where
     pure = pair mempty
+    {-# INLINABLE pure #-}
     liftA2 = biliftPair2 (<>)
+    {-# INLINABLE liftA2 #-}
 
 instance (Monoid c)=> Monad (Pair' c) where
    (>>=) = flip $ bindPairWith (<>)
+   {-# INLINABLE (>>=) #-}
    (>>) = (*>)
+   {-# INLINE (>>) #-}
 
 instance (Semigroup a, Semigroup b)=> Semigroup (Pair' a b) where
     (<>) = biliftPair2 (<>) (<>)
+    {-# INLINABLE (<>) #-}
 
 instance (Monoid a, Monoid b)=> Monoid (Pair' a b) where
     mempty = pair mempty mempty
+    {-# INLINABLE mempty #-}
 
 instance Ord2 Pair' where
     liftCompare2 c1 c2 = c1 `seq` c2 `seq` go
@@ -91,23 +100,33 @@ instance Ord2 Pair' where
 
 instance (Ord c)=> Ord1 (Pair' c) where
     liftCompare = liftCompare2 compare
+    {-# INLINE liftCompare #-}
 
 instance (Ord a, Ord b)=> Ord (Pair' a b) where
 {-^ The @Ord@ instance of @Pair' a b@ compares the @a@ arguments first, and if they are equal compares the @b@ arguments.
 -}
     compare = compare1
-
+    {-# INLINABLE compare #-}
     -- Just in case <= is more efficient for type 'b', define <= manually.
     (u :!: x) <= (v :!: y) = case compare u v of
         GT -> False
         EQ -> x <= y
         LT -> True
-
+    {-# INLINABLE (<=) #-}
     -- 'compare' forces 'Ord' to define a total order, so we can flip things around like this without worrying about an incorrect definition:
     (>=) = flip (<=)
+    {-# INLINE (>=) #-}
     ux > vy = not $ ux <= vy -- default: compare ux vy == GT
+    {-# INLINE (>) #-}
     (<) = flip (>) -- default: compare vy ux == LT
+    {-# INLINE (<) #-}
 
+-- Derived:
+-- instance (Bounded high, Bounded low)=> Bounded (Pair' high low) where
+--     maxBound = maxBound :!: maxBound
+--     {-# INLINABLE maxBound #-}
+--     minBound = minBound :!: minBound
+--     {-# INLINABLE minBound #-}
 
 instance Eq2 Pair' where
     liftEq2 c1 c2 = c1 `seq` c2 `seq` go
@@ -115,9 +134,11 @@ instance Eq2 Pair' where
 
 instance (Eq c)=> Eq1 (Pair' c) where
     liftEq = liftEq2 (==)
+    {-# INLINABLE liftEq #-}
 
 instance (Eq a, Eq b)=> Eq (Pair' a b) where
     (==) = eq1
+    {-# INLINABLE (==) #-}
 
 
 instance NFData2 Pair' where
@@ -125,9 +146,11 @@ instance NFData2 Pair' where
 
 instance (NFData c)=> NFData1 (Pair' c) where
     liftRnf = liftRnf2 rnf
+    {-# INLINABLE liftRnf #-}
 
 instance (NFData a, NFData b)=> NFData (Pair' a b) where
     rnf = rnf1
+    {-# INLINABLE rnf #-}
 
 
 {-# SPECIALIZE fst :: Pair' a b -> a #-}

@@ -81,6 +81,23 @@ instance (Ord c)=> Ord1 (Either' c) where
 instance (Ord a, Ord b)=> Ord (Either' a b) where
     compare = compare1
     {-# INLINABLE compare #-}
+    Right' x <= Right' y = x <= y
+    Right'{} <= Left'{} = False
+    Left'{} <= Right'{} = True
+    Left' x <= Left' y = x <= y
+    {-# INLINABLE (<=) #-}
+    (>=) = flip (<=)
+    {-# INLINE (>=) #-}
+    ex > ey = not (ex <= ey)
+    {-# INLINE (>) #-}
+    (<) = flip (>)
+    {-# INLINE (<) #-}
+
+instance (Bounded low, Bounded high)=> Bounded (Either' low high) where
+    maxBound = Right' maxBound
+    {-# INLINABLE maxBound #-}
+    minBound = Left' minBound
+    {-# INLINABLE minBound #-}
 
 instance Eq2 Either' where
     liftEq2 = liftEq2Either
