@@ -33,18 +33,23 @@ instance IsEither Either' where
     inL = Left'
     inR = Right'
 
-
+#if MIN_VERSION_base(4,10,0)
 instance Bitraversable Either' where
     bitraverse = bitraverseEither
     {-# INLINABLE bitraverse #-}
 
-instance Traversable (Either' c) where
-    traverse = traverseEither
-    {-# INLINABLE traverse #-}
-
 instance Bifoldable Either' where
     bifoldMap = either
     {-# INLINE bifoldMap #-}
+
+instance Bifunctor Either' where
+    bimap = bimapEither
+    second = fmap
+#endif
+
+instance Traversable (Either' c) where
+    traverse = traverseEither
+    {-# INLINABLE traverse #-}
 
 instance Foldable (Either' c) where
     foldMap = either mempty
@@ -53,9 +58,6 @@ instance Foldable (Either' c) where
     foldMap' = foldMap
     {-# INLINE foldMap' #-}
 #endif
-
-instance Bifunctor Either' where
-    bimap = bimapEither
 
 instance Monad (Either' c) where
     (>>=) = flip bindEither
