@@ -119,3 +119,14 @@ instance (Eq c)=> Eq1 (Either' c) where
 instance (Eq a, Eq b)=> Eq (Either' a b) where
     (==) = eq1
     {-# INLINABLE (==) #-}
+
+instance NFData2 Either' where
+    liftRnf2 = either
+
+instance (NFData c)=> NFData1 (Either' c) where
+    liftRnf = liftRnf2 rnf
+    {-# INLINABLE liftRnf #-}
+
+instance (NFData a, NFData b)=> NFData (Either' a b) where
+    rnf = rnf1
+    {-# INLINABLE rnf #-}
