@@ -53,8 +53,9 @@ instance Applicative Maybe' where
     pure = Just'
 #if MIN_VERSION_base(4,10,0)
     liftA2 = liftM2
-#endif
+#else
     (<*>) = ap
+#endif
     (*>) = (>>)
     mx <* my | null mx || null my = empty | otherwise = mx
 

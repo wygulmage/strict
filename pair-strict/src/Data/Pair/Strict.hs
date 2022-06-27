@@ -1,4 +1,6 @@
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE CPP
+           , NoImplicitPrelude
+  #-}
 
 module Data.Pair.Strict (
 Pair'(..),
@@ -12,11 +14,13 @@ import Control.DeepSeq
 import Prelude (Bounded, Read, Show, Eq(..), seq)
 import Control.Applicative
 import Control.Monad
+#if MIN_VERSION_base(4,10,0)
 import Data.Bitraversable
-import Data.Traversable
 import Data.Bifoldable
-import Data.Foldable
 import Data.Bifunctor
+#endif
+import Data.Traversable
+import Data.Foldable
 import Data.Functor.Classes
 import Data.Ord
 import Data.Bool
@@ -32,24 +36,32 @@ instance IsPair Pair' where
     pair = (:!:)
     uncurry' f = f `seq` \ (x :!: y) -> f x y
 
-
+#if MIN_VERSION_base(4,10,0)
 instance Bitraversable Pair' where
     bitraverse = bifoldMapPairWith $ liftA2 pair
     {-# INLINABLE bitraverse #-}
+
+instance Bifoldable Pair' where
+    bifoldMap = bifoldMapPairWith (<>)
+    {-# INLINABLE bifoldMap #-}
+
+instance Bifunctor Pair' where
+    bimap = bimapPair
+    second = fmap
+#endif
 
 instance Traversable (Pair' c) where
     traverse = bifoldMapPairWith fmap pair
     {-# INLINABLE traverse #-}
 
-instance Bifoldable Pair' where
-    bifoldMap = bifoldMapPairWith (<>)
-
 instance Foldable (Pair' c) where
     foldMap = foldMapPair
     {-# INLINABLE foldMap #-}
     -- Definitions below are unnecessary but simplify things:
+#if MIN_VERSION_base(4,13,0)
     foldMap' = foldMap
     {-# INLINE foldMap' #-}
+#endif
     foldr' = foldr
     {-# INLINE foldr' #-}
     foldl' = foldl
@@ -67,18 +79,19 @@ instance Foldable (Pair' c) where
     sum = snd
     {-# INLINE sum #-}
 
-instance Bifunctor Pair' where
-    bimap = bimapPair
-    second = fmap
-
 instance Functor (Pair' c) where
     fmap = fmapPair
 
 instance (Monoid c)=> Applicative (Pair' c) where
     pure = pair mempty
     {-# INLINABLE pure #-}
+#if MIN_VERSION_base(4,10,0)
     liftA2 = biliftPair2 (<>)
     {-# INLINABLE liftA2 #-}
+#else
+    (<*>) = biliftPair2 (<>) ($)
+    {-# INLINABLE (<*>) #-}
+#endif
 
 instance (Monoid c)=> Monad (Pair' c) where
    (>>=) = flip $ bindPairWith (<>)

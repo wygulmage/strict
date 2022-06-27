@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP
+  #-}
 
 
 module Data.Either.Strict (
@@ -11,10 +13,12 @@ import Data.Either.Class
 import Prelude hiding (either)
 import Control.Applicative
 import Control.Monad
+#if MIN_VERSION_base(4,10,0)
 import Data.Bitraversable
 import Data.Bifoldable
-import Data.Foldable
 import Data.Bifunctor
+#endif
+import Data.Foldable
 import Data.Functor.Classes
 
 
@@ -45,8 +49,10 @@ instance Bifoldable Either' where
 instance Foldable (Either' c) where
     foldMap = either mempty
     {-# INLINABLE foldMap #-}
+#if MIN_VERSION_base(4,13,0)
     foldMap' = foldMap
     {-# INLINE foldMap' #-}
+#endif
 
 instance Bifunctor Either' where
     bimap = bimapEither
@@ -64,7 +70,11 @@ instance (Monoid c)=> Alternative (Either' c) where
 
 instance Applicative (Either' c) where
     pure = inR
+#if MIN_VERSION_base(4,10,0)
     liftA2 = liftM2
+#else
+    (<*>) = ap
+#endif
     (*>) = (>>)
     (<*) = thenBackEither
 
